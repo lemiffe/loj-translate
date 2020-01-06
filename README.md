@@ -6,16 +6,15 @@ English - Lój`ns rule-based translation software
 
 Requirements:
 
-* brew install kotlin <- Mac
+* brew install kotlin
+* brew install gradle (recommended but not necessary)
 
-Compiling:
-
-* kotlinc src/main.kt -include-runtime -d app.jar
-* java -jar app.jar
+* ./gradlew build
+* ./gradlew run
+* ./gradlew test <- Run tests
 
 ## Todo
 
-* Project structure
 * Logging
 * EN->LN: Finish rule-based word translation
     * Switch case
@@ -24,7 +23,6 @@ Compiling:
 * EN->LN: Add tests
 * LN->EN: Implement full translation
 * LN->EN: Add tests
-* Gradle
 * Spotless
 * Gradlew?
 * API blueprint

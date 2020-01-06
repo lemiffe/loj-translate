@@ -9,7 +9,11 @@ import java.io.File
 class TextToIpa {
     private var dictionary: MutableMap<String, String> = mutableMapOf();
 
-    fun loadDictionary (fileName: String) {
+    fun loadDictionary (fileName: String?) {
+        if (fileName == null || !File(fileName).exists()) {
+            throw Exception("File '$fileName' does not exist")
+        }
+
         File(fileName).forEachLine {
             val arr = it.split("\\s+".toRegex())
             if (arr.isNotEmpty() && arr.size > 1) {
