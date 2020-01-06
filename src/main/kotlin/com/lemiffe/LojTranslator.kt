@@ -1,5 +1,7 @@
 package com.lemiffe
 
+import org.apache.logging.log4j.LogManager
+
 /**
  * Rules:
  *
@@ -34,10 +36,15 @@ package com.lemiffe
  * Primary punctuation consists of - and  — (which are used for pauses), and there is no need to end a paragraph with - or — unless you need to emphasise a long pause before starting the next paragraph, a full stop at the end of the text can be denoted with two vertical lines: ||
  */
 class LojTranslator() {
-    private val textToIpa = TextToIpa()
+    companion object {
+        private val logger = LogManager.getLogger()
+        private val textToIpa = TextToIpa()
+    }
 
     init {
-        textToIpa.loadDictionary(LojTranslator::class.java.getResource("/ipadict.txt").path)
+        val dictionaryPath = LojTranslator::class.java.getResource("/ipadict.txt").path
+        logger.info("Loading dictionary from $dictionaryPath...")
+        textToIpa.loadDictionary(dictionaryPath)
     }
 
     fun translateWordToLoj(word: String): String? {
@@ -97,8 +104,7 @@ class LojTranslator() {
         // Todo: Conversion of "belonging like "english, chinese" must happen before vocal removal
 
         if (result.endsWithVocal()) {
-            val vocal = result.takeLast(1)
-            // “ees” like cheese, breeze, fleece, drop ending e, e.g. Chës, Brës, Flëç
+            // Replace ending “ees” sounds like cheese, breeze, fleece (e.g. Chës, Brës, Flëç)
             result = result.replace("ese$","eç");
             result = result.replace("ece$","eç");
             result = result.replace("ace$","aç");
@@ -110,8 +116,8 @@ class LojTranslator() {
             result = result.replace("uce$","uç");
             result = result.replace("use$","uç");
 
+            // If it still ends in vocal after replacements, drop the last character
             if (result.takeLast(1).endsWithVocal()) {
-                // If still vocal after replacements, drop last vocal
                 result = result.dropLast(1)
             }
         }

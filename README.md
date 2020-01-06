@@ -11,20 +11,23 @@ Requirements:
 
 * ./gradlew build
 * ./gradlew run
-* ./gradlew test <- Run tests
+* ./gradlew test
 
-## Todo
+## Task List
 
-* Logging
+Translator tasks:
+
 * EN->LN: Finish rule-based word translation
-    * Switch case
+    * Whole-word substitution with switch
 * EN->LN: IPA word implementation
 * EN->LN: Translate phrases
 * EN->LN: Add tests
 * LN->EN: Implement full translation
 * LN->EN: Add tests
 * Spotless
-* Gradlew?
+
+Server tasks:
+
 * API blueprint
 * Micronaut server
 * Coroutines
@@ -32,7 +35,7 @@ Requirements:
 * Sentry
 * Docker
 * CI/CD
-* K8s
+* K8s/Heroku
 * Indexing
 * Search
 
