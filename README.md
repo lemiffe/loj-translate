@@ -18,6 +18,7 @@ Compiling:
 * Project structure
 * Logging
 * EN->LN: Finish rule-based word translation
+    * Switch case
 * EN->LN: IPA word implementation
 * EN->LN: Translate phrases
 * EN->LN: Add tests
@@ -28,6 +29,7 @@ Compiling:
 * Gradlew?
 * API blueprint
 * Micronaut server
+* Coroutines
 * Saga pattern
 * Sentry
 * Docker
