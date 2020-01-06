@@ -1,7 +1,5 @@
 package com.lemiffe
 
-import TextToIpa
-
 /**
  * Rules:
  *
@@ -39,7 +37,7 @@ class LojTranslator() {
     private val textToIpa = TextToIpa()
 
     init {
-        textToIpa.loadDictionary("src/ipadict.txt")
+        textToIpa.loadDictionary(LojTranslator::class.java.getResource("/ipadict.txt").path)
     }
 
     fun translateWordToLoj(word: String): String? {

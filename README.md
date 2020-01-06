@@ -23,6 +23,9 @@ Compiling:
 * EN->LN: Add tests
 * LN->EN: Implement full translation
 * LN->EN: Add tests
+* Gradle
+* Spotless
+* Gradlew?
 * API blueprint
 * Micronaut server
 * Saga pattern
