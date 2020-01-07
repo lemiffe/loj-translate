@@ -2,7 +2,7 @@ package com.lemiffe
 
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser
 import org.apache.logging.log4j.LogManager
-
+import java.io.File
 
 /**
  * Rules:
@@ -25,12 +25,11 @@ import org.apache.logging.log4j.LogManager
  *
  * To implement:
  *
- * Diminutives: Objects can be made smaller by appending “ké” as in Flemish… e.g. “cálké” → Small caller. If an object ends in “k”, you must use “je” for the diminutive form… e.g. “book” → “bökjé” ← NOTE: This violates the rule of vowels at the end of words
+ * Diminutives: Objects can be made smaller by appending “ké`” as in Flemish… e.g. “cálké`” → Small caller. If an object ends in “k”, you must use “jé`” for the diminutive form… e.g. “book” → “bökjé`”
  * Augmentatives: Objects can be made larger by appending “ón”
  * The “ár” digraph is used to indicate belonging/being from something, e.g. “English” → “Énglár” essentially replacing “ish”, e.g. “peckish” → “pécklár”
  * Past tense: Suffix with ` (e.g. fál → fál`)
  * Future tense: Suffix with `é` (e.g. fál → fál`é`)
- * Additional rules and direct word translations from ruleset
  *
  * Future improvements:
  *
@@ -42,6 +41,7 @@ class LojTranslator() {
         private val logger = LogManager.getLogger()
         private val textToIpa = TextToIpa()
         private var parser: LexicalizedParser? = null
+        private val lojDictionary: MutableMap<String, String> = mutableMapOf()
     }
 
     init {
@@ -52,6 +52,14 @@ class LojTranslator() {
         val grammarPath = LojTranslator::class.java.getResource("/englishPCFG.ser.gz").path
         logger.info("Loading model from $grammarPath...") // e.g. edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz
         parser = LexicalizedParser.loadModel(grammarPath)
+
+        val lojDictionaryPath = LojTranslator::class.java.getResource("/english-to-loj-dict.txt").path
+        File(lojDictionaryPath).forEachLine {
+            val arr = it.split("\\s+".toRegex())
+            if (arr.isNotEmpty() && arr.size > 1) {
+                lojDictionary[arr[0]] = arr[1]
+            }
+        }
     }
 
     fun translateWordToLoj(word: String): String? {
@@ -67,11 +75,12 @@ class LojTranslator() {
             //TODO
         }*/
 
-        // Translate based on standard rules
-        if (word == "The") {
-            return "`"
+        // Return known word from english-loj`ns dictionary
+        if (lojDictionary.containsKey(word)) {
+            return lojDictionary[word]
         }
 
+        // Translate based on standard rules
         result = word
             .replace("z", "s")
             .replace("q", "k")
@@ -146,7 +155,9 @@ class LojTranslator() {
 
         // Tokenize
 
-        // Translate
+        // Translate (lowercase)
+
+        // Re-capitalise
 
         // Put back together
 

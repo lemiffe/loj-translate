@@ -20,13 +20,14 @@ Run:
 Translator tasks:
 
 * EN->LN: Finish rule-based word translation
-    * Whole-word substitution with switch
 * EN->LN: IPA word implementation
 * EN->LN: Translate phrases
 * EN->LN: Add tests
 * LN->EN: Implement full translation
 * LN->EN: Add tests
 * Spotless
+* Library: https://guides.gradle.org/building-kotlin-jvm-libraries/
+* Release
 
 Server tasks:
 
@@ -40,6 +41,7 @@ Server tasks:
 * K8s/Heroku
 * Indexing
 * Search
+* Release: https://github.com/heroku/kotlin-getting-started
 
 ## Resources
 
