@@ -9,6 +9,8 @@ Requirements:
 * brew install kotlin
 * brew install gradle (recommended but not necessary)
 
+Run:
+
 * ./gradlew build
 * ./gradlew run
 * ./gradlew test
