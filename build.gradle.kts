@@ -18,6 +18,7 @@ dependencies {
     testImplementation("junit:junit:4.12")
     constraints  {
         compile("org.apache.logging.log4j", "log4j-core", "2.13.0")
+        compile("edu.stanford.nlp", "stanford-parser", "3.7.0")
     }
 }
 

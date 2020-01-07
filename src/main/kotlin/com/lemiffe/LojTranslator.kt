@@ -1,6 +1,8 @@
 package com.lemiffe
 
+import edu.stanford.nlp.parser.lexparser.LexicalizedParser
 import org.apache.logging.log4j.LogManager
+
 
 /**
  * Rules:
@@ -39,12 +41,17 @@ class LojTranslator() {
     companion object {
         private val logger = LogManager.getLogger()
         private val textToIpa = TextToIpa()
+        private var parser: LexicalizedParser? = null
     }
 
     init {
         val dictionaryPath = LojTranslator::class.java.getResource("/ipadict.txt").path
         logger.info("Loading dictionary from $dictionaryPath...")
         textToIpa.loadDictionary(dictionaryPath)
+
+        val grammarPath = LojTranslator::class.java.getResource("/englishPCFG.ser.gz").path
+        logger.info("Loading model from $grammarPath...") // e.g. edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz
+        parser = LexicalizedParser.loadModel(grammarPath)
     }
 
     fun translateWordToLoj(word: String): String? {
@@ -130,6 +137,20 @@ class LojTranslator() {
             .replace("u", "ú")
 
         return result
+    }
+
+    public fun translateToLoj(sentence: String): String {
+        // Parse
+        val parsedSentence = parser!!.parse(sentence)
+        return parsedSentence.toString()
+
+        // Tokenize
+
+        // Translate
+
+        // Put back together
+
+        // Correct
     }
 }
 
