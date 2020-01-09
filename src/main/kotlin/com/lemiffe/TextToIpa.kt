@@ -1,6 +1,6 @@
 package com.lemiffe
 
-import org.apache.logging.log4j.LogManager
+import mu.KotlinLogging
 import java.io.File
 
 /**
@@ -9,7 +9,7 @@ import java.io.File
  */
 class TextToIpa {
     companion object {
-        private val logger = LogManager.getLogger()
+        private val logger = KotlinLogging.logger {}
         private var dictionary: MutableMap<String, String> = mutableMapOf();
     }
 

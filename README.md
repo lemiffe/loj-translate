@@ -43,7 +43,8 @@ Server tasks:
 * Search
 * Release: https://github.com/heroku/kotlin-getting-started
 
-## Resources
+## Resources & References
 
-* Incorporated TextToIPA from https://github.com/surrsurus/text-to-ipa (JS -> Kotlin)
-* Requires the CMU IPA dictionary (http://people.umass.edu/nconstan/CMU-IPA/)
+* Translated TextToIPA from JS to Kotlin: https://github.com/surrsurus/text-to-ipa
+* Incorporates the CMU IPA dictionary: http://people.umass.edu/nconstan/CMU-IPA/
+* Uses the Stanford Parser: https://nlp.stanford.edu/software/lex-parser.html

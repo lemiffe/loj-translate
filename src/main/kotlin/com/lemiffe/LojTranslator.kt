@@ -1,44 +1,12 @@
 package com.lemiffe
 
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser
-import org.apache.logging.log4j.LogManager
+import mu.KotlinLogging
 import java.io.File
 
-/**
- * Rules:
- *
- * No letter “z”, use “s” instead
- * No letter “q”, use “k” instead
- * No letter “y”, use “j” instead (as in Dutch)
- * No letter “t”, use ` instead
- * No letter “h”, so any use in English would be dropped (silent) in
- * All double letters are dropped, so “pass the cheese” becomes “pás dé chës”
- * Whenever there is a t before a vocal, the vocal inherits it with a backtick accent, e.g. ò dö, but this is not necessary and the long form is preferred to a void loss of pronounciation data: `ö dö
- * Most words are based on English, prepositions and personal pronouns are based on Dutch, verbs ending in “ing” now end in “én”
- * Certain contractions like “can’t” and “won’t” use the Scottish form “cannae”, “willnae” (ní`)
- * The “ae” from Scots in “cannae/dunnae” becomes “í`” as in “cání`/dúnī`”
- * “The” becomes het (as in Dutch), but there is no “t” so it  becomes he`, but the abbreviation is ‘t in Dutch, so for out purposes the = "`”, e.g. “` bú`r”, but unlike Dutch there is no gender distinction between “het/de” and only “`” is used
- * All vocals are accented, either áéíóú for hard sounds, and äëïöü for the soft variants
- * -   The letter ç is a soft c, e.g. the “c” in Fleece, which would be written as Flëç, and is only used at the end of sentences that would usually have a vowel at the end in English
- * -   Words never end in a vocal
- * -   Words that end sounding “ees” like cheese, breeze, fleece, drop ending e, e.g. Chës, Brës, Flëç
- *
- * To implement:
- *
- * Diminutives: Objects can be made smaller by appending “ké`” as in Flemish… e.g. “cálké`” → Small caller. If an object ends in “k”, you must use “jé`” for the diminutive form… e.g. “book” → “bökjé`”
- * Augmentatives: Objects can be made larger by appending “ón”
- * The “ár” digraph is used to indicate belonging/being from something, e.g. “English” → “Énglár” essentially replacing “ish”, e.g. “peckish” → “pécklár”
- * Past tense: Suffix with ` (e.g. fál → fál`)
- * Future tense: Suffix with `é` (e.g. fál → fál`é`)
- *
- * Future improvements:
- *
- * The ^ (hat) symbol is used to string words that should be pronounced uninterruptedly together, as well as words that would be separated using hyphens in English (e.g. long-running process)
- * Primary punctuation consists of - and  — (which are used for pauses), and there is no need to end a paragraph with - or — unless you need to emphasise a long pause before starting the next paragraph, a full stop at the end of the text can be denoted with two vertical lines: ||
- */
 class LojTranslator() {
     companion object {
-        private val logger = LogManager.getLogger()
+        private val logger = KotlinLogging.logger {}
         private val textToIpa = TextToIpa()
         private var parser: LexicalizedParser? = null
         private val lojDictionary: MutableMap<String, String> = mutableMapOf()
@@ -62,7 +30,37 @@ class LojTranslator() {
         }
     }
 
-    fun translateWordToLoj(word: String): String? {
+    public fun translateSentenceToLoj(sentence: String): String {
+        // Parse
+        val parsedSentence = parser!!.parse(sentence)
+
+        logger.info(parsedSentence.toString())
+
+        // Tokenize
+        val tokens = sentence.split("\\s+".toRegex())
+        if (tokens.isEmpty()) {
+            return ""
+        }
+
+        // Translate (lowercase)
+        var translation = listOf<String?>()
+        translation = tokens.map { translateWordToLoj(it.toLowerCase()) }.filter { it !== null && it.isNotEmpty() }
+
+        // Re-capitalise
+
+        // Put back together
+        val result = translation.joinToString(separator = " ")
+
+        // Correct
+
+        return result
+
+        // Todo:
+        // The ^ (hat) symbol is used to string words that should be pronounced uninterruptedly together, as well as words that would be separated using hyphens in English (e.g. long-running process)
+        // Primary punctuation consists of - and  — (which are used for pauses), and there is no need to end a paragraph with - or — unless you need to emphasise a long pause before starting the next paragraph, a full stop at the end of the text can be denoted with two vertical lines: ||
+    }
+
+    private fun translateWordToLoj(word: String): String? {
         val ipaResults = textToIpa.lookup(word)
         var result = ""
 
@@ -104,6 +102,7 @@ class LojTranslator() {
             .replace("pp", "p")
             .replace("rr", "r")
             .replace("ss", "s")
+            .replace("``", "`")
             .replace("uu", "u")
             .replace("vv", "v")
             .replace("ww", "w")
@@ -121,16 +120,16 @@ class LojTranslator() {
 
         if (result.endsWithVocal()) {
             // Replace ending “ees” sounds like cheese, breeze, fleece (e.g. Chës, Brës, Flëç)
-            result = result.replace("ese$","eç");
-            result = result.replace("ece$","eç");
-            result = result.replace("ace$","aç");
-            result = result.replace("ase$","aç");
-            result = result.replace("ice$","iç");
-            result = result.replace("ise$","iç");
-            result = result.replace("ose$","oç");
-            result = result.replace("oce$","oç");
-            result = result.replace("uce$","uç");
-            result = result.replace("use$","uç");
+            result = result.replace("ese$".toRegex(),"eç")
+                .replace("ece$".toRegex(),"eç")
+                .replace("ace$".toRegex(),"aç")
+                .replace("ase$".toRegex(),"aç")
+                .replace("ice$".toRegex(),"iç")
+                .replace("ise$".toRegex(),"iç")
+                .replace("ose$".toRegex(),"oç")
+                .replace("oce$".toRegex(),"oç")
+                .replace("uce$".toRegex(),"uç")
+                .replace("use$".toRegex(),"uç")
 
             // If it still ends in vocal after replacements, drop the last character
             if (result.takeLast(1).endsWithVocal()) {
@@ -146,25 +145,17 @@ class LojTranslator() {
             .replace("u", "ú")
 
         return result
-    }
 
-    public fun translateToLoj(sentence: String): String {
-        // Parse
-        val parsedSentence = parser!!.parse(sentence)
-        return parsedSentence.toString()
-
-        // Tokenize
-
-        // Translate (lowercase)
-
-        // Re-capitalise
-
-        // Put back together
-
-        // Correct
+        // TODO: Diminutives: Objects can be made smaller by appending “ké`” as in Flemish… e.g. “cálké`” → Small caller. If an object ends in “k”, you must use “jé`” for the diminutive form… e.g. “book” → “bökjé`”
+        // TODO: Augmentatives: Objects can be made larger by appending “ón”
+        // TODO: The “ár” digraph is used to indicate belonging/being from something, e.g. “English” → “Énglár” essentially replacing “ish”, e.g. “peckish” → “pécklár”
+        // TODO: Past tense: Suffix with ` (e.g. fál → fál`)
+        // TODO: Future tense: Suffix with `é` (e.g. fál → fál`é`)
     }
 }
 
 fun String.endsWithVocal (): Boolean {
     return (this.endsWith("a") or this.endsWith("e") or this.endsWith("i") or this.endsWith("o") or this.endsWith("u"))
 }
+
+
