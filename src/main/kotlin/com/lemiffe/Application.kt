@@ -1,6 +1,6 @@
 package com.lemiffe
 
-object Main {
+object Application {
     @JvmStatic
     fun main(args: Array<String>) {
         val translator = LojTranslator()
