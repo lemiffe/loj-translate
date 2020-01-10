@@ -31,6 +31,10 @@ class LojTranslator() {
     }
 
     public fun translateSentenceToLoj(sentence: String): String {
+        // "Hi John...", she said. 'Oh, hi MATE, here's your $50!', he replied.
+        // [``/``, Hi/NNP, John/NNP, .../VBZ, ''/'', ,/,, she/PRP, said/VBD, ./., `/``, Oh/UH, ,/,, hi/UH, MATE/UH, ,/,, here/RB, 's/VBZ, your/PRP$, $/$, 50/CD, !/NN, '/'', ,/,, he/PRP, replied/VBD, ./.]
+        // " jón...", séj sáíd. 'ó, vás má`é, éré's jïjn $50!', éj réplíéd.
+
         // Parse + Tag
         val taggedSentence = parser!!.parse(sentence).taggedYield()
         logger.info(taggedSentence.toString())
@@ -131,7 +135,7 @@ class LojTranslator() {
                 .replace("use$".toRegex(),"uç")
 
             // If it still ends in vocal after replacements, drop the last character
-            if (result.takeLast(1).endsWithVocal()) {
+            if (result.endsWithVocal()) {
                 result = result.dropLast(1)
             }
         }
@@ -154,7 +158,7 @@ class LojTranslator() {
 }
 
 fun String.endsWithVocal (): Boolean {
-    return (this.endsWith("a") or this.endsWith("e") or this.endsWith("i") or this.endsWith("o") or this.endsWith("u"))
+    return listOf("a", "e", "i", "o", "u").contains(this.takeLast(1).toLowerCase())
 }
 
 

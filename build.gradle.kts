@@ -29,5 +29,5 @@ dependencies {
 }
 
 application {
-    mainClassName = "com.lemiffe.Main"
+    mainClassName = "com.lemiffe.Application"
 }
