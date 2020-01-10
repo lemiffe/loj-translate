@@ -48,3 +48,6 @@ Server tasks:
 * Translated TextToIPA from JS to Kotlin: https://github.com/surrsurus/text-to-ipa
 * Incorporates the CMU IPA dictionary: http://people.umass.edu/nconstan/CMU-IPA/
 * Uses the Stanford Parser: https://nlp.stanford.edu/software/lex-parser.html
+* POS basics: https://www.englishclub.com/grammar/parts-of-speech.htm
+* Stanford Parser POS abbreviations: https://www.computing.dcu.ie/~acahill/tagset.html (broken link)
+    * Archive: https://web.archive.org/web/20140313010853/http://www.computing.dcu.ie/~acahill/tagset.html

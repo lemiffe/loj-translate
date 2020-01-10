@@ -31,10 +31,9 @@ class LojTranslator() {
     }
 
     public fun translateSentenceToLoj(sentence: String): String {
-        // Parse
-        val parsedSentence = parser!!.parse(sentence)
-
-        logger.info(parsedSentence.toString())
+        // Parse + Tag
+        val taggedSentence = parser!!.parse(sentence).taggedYield()
+        logger.info(taggedSentence.toString())
 
         // Tokenize
         val tokens = sentence.split("\\s+".toRegex())
