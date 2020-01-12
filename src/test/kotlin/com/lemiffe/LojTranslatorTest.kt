@@ -5,7 +5,7 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class LojTranslatorTest {
-    @Test fun testFullWordSubstitution() {
+    @Test fun testFullWordSubstitutions() {
         val translator = LojTranslator()
 
         var result = translator.translateSentenceToLoj("the")
@@ -21,7 +21,20 @@ class LojTranslatorTest {
         assertEquals("", result)
 
         result = translator.translateSentenceToLoj("bah")
-        assertEquals("b", result) // TODO: Revisit, add to dict? or apply rule?
+        assertEquals("még", result)
+    }
+
+    @Test fun testTwoWordTranslations() {
+        val translator = LojTranslator()
+
+        var result = translator.translateSentenceToLoj("the cat")
+        assertEquals("` cá`", result)
+
+        result = translator.translateSentenceToLoj("No way")
+        assertEquals("Ní` wáj", result) // TODO: Should be wäy after IPA introduction
+
+        result = translator.translateSentenceToLoj("Oof WOW!")
+        assertEquals("Óflá SÖMWÁM!", result)
     }
 
     // TODO: Implement full-sentence two-way translation tests

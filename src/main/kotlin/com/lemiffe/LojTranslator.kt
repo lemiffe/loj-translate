@@ -1,5 +1,6 @@
 package com.lemiffe
 
+import com.lemiffe.models.translator.*
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser
 import mu.KotlinLogging
 import java.io.File
@@ -30,31 +31,123 @@ class LojTranslator() {
         }
     }
 
-    public fun translateSentenceToLoj(sentence: String): String {
-        // "Hi John...", she said. 'Oh, hi MATE, here's your $50!', he replied.
-        // [``/``, Hi/NNP, John/NNP, .../VBZ, ''/'', ,/,, she/PRP, said/VBD, ./., `/``, Oh/UH, ,/,, hi/UH, MATE/UH, ,/,, here/RB, 's/VBZ, your/PRP$, $/$, 50/CD, !/NN, '/'', ,/,, he/PRP, replied/VBD, ./.]
-        // " jón...", séj sáíd. 'ó, vás má`é, éré's jïjn $50!', éj réplíéd.
-
+    fun translateSentenceToLoj(sentence: String): String {
         // Parse + Tag
         val taggedSentence = parser!!.parse(sentence).taggedYield()
-        logger.info(taggedSentence.toString())
-
-        // Tokenize
-        val tokens = sentence.split("\\s+".toRegex())
-        if (tokens.isEmpty()) {
+        if (taggedSentence.isEmpty()) {
             return ""
         }
 
-        // Translate (lowercase)
-        var translation = listOf<String?>()
-        translation = tokens.map { translateWordToLoj(it.toLowerCase()) }.filter { it !== null && it.isNotEmpty() }
+        // Tokenise
+        val words = mutableListOf<Word>()
 
-        // Re-capitalise
+        for ((index, token) in taggedSentence.withIndex()) {
+            val isLast = (index == taggedSentence.size - 1)
+            val text = token.value().toLowerCase().trim()
+            val pos = token.tag().toUpperCase()
+            if (text.isNotEmpty()) {
+                val word = Word(
+                    text = text,
+                    pos = (if (enumContains<POS>(pos)) POS.valueOf(pos) else POS.OTHER),
+                    capitalisation = when {
+                        token.value().isUppercase() -> Capitalisation.UPPERCASE
+                        token.value().isCapitalised() -> Capitalisation.CAPITALISED
+                        else -> Capitalisation.LOWERCASE
+                    },
+                    action = TranslatorAction.KEEP
+                )
 
-        // Put back together
-        val result = translation.joinToString(separator = " ")
+                when (word.pos) {
+                    POS.OTHER -> when(word.text) {
+                        "``" -> { word.apply { this.text = "\""; action = TranslatorAction.GLUE_RIGHT } }
+                        "''" -> { word.apply { this.text = "\""; action = TranslatorAction.GLUE_LEFT } }
+                        "." -> {
+                            word.apply {
+                                if (isLast) {
+                                    this.text = "||";
+                                    action = TranslatorAction.GLUE_LEFT
+                                } else {
+                                    this.text = "—";
+                                    action = TranslatorAction.KEEP
+                                }
+                            }
+                        }
+                        "," -> { word.apply { this.text = "-"; action = TranslatorAction.KEEP } }
+                        "$" -> { word.apply { this.text = "$"; action = TranslatorAction.GLUE_RIGHT } }
+                        "`" -> { word.apply { this.text = "'"; action = TranslatorAction.GLUE_RIGHT } }
+                        "'" -> { word.apply { this.text = "'"; action = TranslatorAction.GLUE_LEFT } }
+                        "!" -> { word.apply { this.text = "!"; action = TranslatorAction.GLUE_LEFT } }
+                        "?" -> { word.apply { this.text = "?"; action = TranslatorAction.GLUE_LEFT } }
+                    }
+                    POS.NN -> when(word.text) {
+                        "!" -> { word.apply { this.text = "!"; action = TranslatorAction.GLUE_LEFT } }
+                        "?" -> { word.apply { this.text = "?"; action = TranslatorAction.GLUE_LEFT } }
+                    }
+                    POS.VBZ -> when(word.text) {
+                        "..." -> { word.apply { this.text = "—"; action = TranslatorAction.KEEP } }
+                    }
+                }
 
-        // Correct
+                words.add(word)
+            }
+        }
+
+        // Translate
+        words
+            .filter { it.text.isNotEmpty() && it.pos != POS.OTHER }
+            .map {
+                it.translation = translateWordToLoj(it.text)
+
+                // Re-capitalise
+                if (it.translation !== null) {
+                    it.translation = when(it.capitalisation) {
+                        Capitalisation.CAPITALISED -> it.translation!!.capitalize()
+                        Capitalisation.UPPERCASE -> it.translation!!.toUpperCase()
+                        else -> it.translation
+                    }
+                }
+
+                it
+            }
+            .filter { it.action != TranslatorAction.REMOVE }
+
+        // Form sentence
+        var result = ""
+        for ((index, word) in words.withIndex()) {
+            val isLast = (index == words.size - 1)
+            when (word.pos) {
+                POS.OTHER -> {
+                    when (word.action) {
+                        TranslatorAction.GLUE_RIGHT -> result += word.translation ?: word.text
+                        TranslatorAction.KEEP -> result += word.translation ?: word.text + (if (!isLast) " " else "")
+                        TranslatorAction.GLUE_LEFT -> {
+                            if (index > 0 && result.endsWith(" ")) {
+                                result = result.dropLast(1)
+                            }
+                            val finalWord = word.translation ?: word.text
+                            result += finalWord + (if (!isLast) " " else "")
+                        }
+                    }
+                }
+                else -> {
+                    if (word.translation !== null) {
+                        when (word.action) {
+                            TranslatorAction.GLUE_RIGHT -> result += word.translation
+                            TranslatorAction.KEEP -> result += word.translation + (if (!isLast) " " else "")
+                            TranslatorAction.GLUE_LEFT -> {
+                                if (index > 0 && result.endsWith(" ")) {
+                                    result = result.dropLast(1)
+                                }
+                                result += word.translation + (if (!isLast) " " else "")
+                            }
+                        }
+                    }
+                }
+            }
+            println(word)
+        }
+
+        // Perform corrections
 
         return result
 
@@ -161,4 +254,14 @@ fun String.endsWithVocal (): Boolean {
     return listOf("a", "e", "i", "o", "u").contains(this.takeLast(1).toLowerCase())
 }
 
+fun String.isUppercase (): Boolean {
+    return this.matches("^[A-Z0-9-]{2,}$".toRegex())
+}
 
+fun String.isCapitalised (): Boolean {
+    return this.matches("^[A-Z]+[a-z0-9-]+.*$".toRegex())
+}
+
+inline fun <reified T : Enum<T>> enumContains(name: String): Boolean {
+    return enumValues<T>().any { it.name == name}
+}

@@ -1,15 +1,11 @@
 package com.lemiffe.models.translator
 
 enum class Capitalisation {
-    CAPITALISED, UPPERCASE, LOWERCASE, FIRST_LETTER_CAPITALISED
+    CAPITALISED, UPPERCASE, LOWERCASE
 }
 
 enum class TranslatorAction {
-    GLUE_FORWARD, GLUE_BACKWARD, REMOVE, KEEP
-}
-
-enum class WordType {
-    PUNCTUATION, SYMBOL, TEXT
+    GLUE_RIGHT, GLUE_LEFT, REMOVE, KEEP
 }
 
 enum class POS {
@@ -49,12 +45,13 @@ enum class POS {
     WP,
     `WP$`,
     WRB,
+    OTHER
 }
 
 data class Word(
-    val text: String,
+    var text: String,
     val capitalisation: Enum<Capitalisation>,
-    val action: Enum<TranslatorAction>,
-    val type: Enum<WordType>,
-    val pos: Enum<POS>
+    var action: Enum<TranslatorAction>,
+    val pos: Enum<POS>,
+    var translation: String? = null
 )
